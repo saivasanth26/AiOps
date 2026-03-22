@@ -49,10 +49,6 @@ def query_prometheus(query: str) -> float | None:
 
 
 def get_metrics() -> dict | None:
-    """
-    Fetch all three metrics for the recommendation service.
-    Returns a dict with p95, cpu, rps or None if critical metrics fail.
-    """
     p95 = query_prometheus(P95_QUERY)
     cpu = query_prometheus(CPU_QUERY)
     rps = query_prometheus(RPS_QUERY)
@@ -63,9 +59,10 @@ def get_metrics() -> dict | None:
         )
         return None
 
+    # Skip sample if CPU is missing to avoid false anomalies
     if cpu is None:
-        logger.warning("CPU metric unavailable, defaulting to 0.0")
-        cpu = 0.0
+        logger.warning("CPU metric unavailable — skipping sample")
+        return None
 
     metrics = {
         "p95_latency_ms": round(p95, 4),

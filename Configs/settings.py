@@ -23,20 +23,20 @@ P95_QUERY = (
     'histogram_quantile(0.95, sum(rate('
     'traces_span_metrics_duration_milliseconds_bucket{'
     'service_name="recommendation",'
-    'span_kind="SPAN_KIND_SERVER"}[5m])) by (le))'
+    'span_kind="SPAN_KIND_SERVER"}[2m])) by (le))'
 )
 
 CPU_QUERY = (
     'sum(rate(container_cpu_usage_seconds_total{'
     'namespace="otel-demo",'
     'pod=~"recommendation.*",'
-    'container="recommendation"}[5m]))'
+    'container="recommendation"}[2m]))'
 )
 
 RPS_QUERY = (
     'sum(rate(traces_span_metrics_duration_milliseconds_count{'
     'service_name="recommendation",'
-    'span_kind="SPAN_KIND_SERVER"}[5m]))'
+    'span_kind="SPAN_KIND_SERVER"}[2m]))'
 )
 
 # Downstream dependency query for RCA
@@ -52,7 +52,7 @@ DOWNSTREAM_QUERY = (
 # ──────────────────────────────────────────
 BASELINE_SAMPLES    = 20
 COLLECTION_INTERVAL = 10
-CONTAMINATION       = 0.1
+CONTAMINATION       = 0.05
 N_ESTIMATORS        = 100
 RANDOM_STATE        = 42
 
