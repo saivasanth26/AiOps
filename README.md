@@ -58,61 +58,73 @@ The LLM is strictly limited to formatting output. It never drives detection, RCA
 
 ## System Architecture
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    LAYER 1 — INSTRUMENTATION                 │
-│                                                             │
-│  OTel Demo App (Kubernetes)                                 │
-│  Services: recommendation, product-catalog, frontend, ...   │
-│       ↓ OTLP                                                │
-│  OTel Collector                                             │
-│       ↓ metrics              ↓ traces                       │
-│  Prometheus :9090        Jaeger v1.52 :16686                │
-└─────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────┐
-│                    LAYER 2 — DETECTION                       │
-│                                                             │
-│  metrics_fetcher.py                                         │
-│  → p95 latency (traces_span_metrics_duration_ms)            │
-│  → CPU usage   (container_cpu_usage_seconds_total)          │
-│  → RPS         (traces_span_metrics_duration_ms_count)      │
-│       ↓ feature vector [p95, cpu, rps]                      │
-│  StandardScaler → Isolation Forest                          │
-│       ↓ prediction == -1                                    │
-│  ANOMALY DETECTED                                           │
-└─────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────┐
-│                    LAYER 3 — REASONING                       │
-│                                                             │
-│  trace_analyzer.py                                          │
-│  → fetch recent traces from Jaeger                          │
-│  → parse spans, enrich with service names                   │
-│  → identify slowest span, downstream vs internal            │
-│       ↓ structured trace analysis                           │
-│  rule_engine.py (5 deterministic rules)                     │
-│  → cascade failure / resource pressure / traffic spike      │
-│  → downstream dependency / internal slowness                │
-│       ↓ root_cause, culprit, confidence                     │
-│  suggestion_engine.py                                       │
-│  → map root cause → actionable fixes                        │
-│  → assign priority (P1–P3)                                  │
-└─────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────┐
-│                    LAYER 4 — EXPLANATION                     │
-│                                                             │
-│  explainer.py                                               │
-│  → structured context passed to Ollama (Mistral)            │
-│  → LLM generates human-readable incident report             │
-│  → LLM makes ZERO decisions                                 │
-│       ↓                                                     │
-│  INCIDENT REPORT                                            │
-│  root_cause | culprit | priority | suggestions | summary    │
-└─────────────────────────────────────────────────────────────┘
+## System Architecture
 ```
-
----
+╔══════════════════════════════════════════════════════════════╗
+║                  LAYER 1 — INSTRUMENTATION                   ║
+║                                                              ║
+║   OTel Demo App (Kubernetes · 2 nodes · 28 services)         ║
+║          ↓ OTLP gRPC                                         ║
+║   OTel Collector                                             ║
+║     ├── metrics ──→ Prometheus  :9090                        ║
+║     └── traces  ──→ Jaeger v1.52 :16686                      ║
+╚══════════════════════════════════════════════════════════════╝
+                          │
+                          ▼
+╔══════════════════════════════════════════════════════════════╗
+║                   LAYER 2 — DETECTION                        ║
+║                                                              ║
+║   metrics_fetcher.py                                         ║
+║     ├── p95 latency  →  traces_span_metrics [5m]             ║
+║     ├── cpu usage    →  container_cpu_usage [5m]             ║
+║     └── rps          →  traces_span_metrics_count [5m]       ║
+║                          ↓                                   ║
+║   feature vector    →  [p95, cpu, rps]                       ║
+║                          ↓                                   ║
+║   StandardScaler    →  normalize                             ║
+║                          ↓                                   ║
+║   Isolation Forest  →  predict()                             ║
+║                          ↓                                   ║
+║          prediction == -1  →  ANOMALY DETECTED               ║
+╚══════════════════════════════════════════════════════════════╝
+                          │
+                          ▼
+╔══════════════════════════════════════════════════════════════╗
+║                   LAYER 3 — REASONING                        ║
+║                                                              ║
+║   trace_analyzer.py                                          ║
+║     ├── fetch latest traces from Jaeger                      ║
+║     ├── parse spans → enrich with service names              ║
+║     └── separate target spans from downstream spans          ║
+║                          ↓                                   ║
+║   rule_engine.py  (priority order)                           ║
+║     ├── Rule 1 → cascade failure   (errors across services)  ║
+║     ├── Rule 2 → resource pressure (CPU > 80%)               ║
+║     ├── Rule 3 → traffic spike     (RPS > 2x baseline)       ║
+║     ├── Rule 4 → downstream dep.   (downstream > internal)   ║
+║     └── Rule 5 → internal slowness (default)                 ║
+║                          ↓                                   ║
+║   suggestion_engine.py                                       ║
+║     └── root cause → fix suggestions + priority (P1–P3)      ║
+╚══════════════════════════════════════════════════════════════╝
+                          │
+                          ▼
+╔══════════════════════════════════════════════════════════════╗
+║                  LAYER 4 — EXPLANATION                       ║
+║                                                              ║
+║   explainer.py                                               ║
+║     ├── structured context → Ollama (Mistral)                ║
+║     ├── LLM generates human-readable incident report         ║
+║     └── LLM makes ZERO decisions — explanation only          ║
+║                          ↓                                   ║
+║   INCIDENT REPORT                                            ║
+║     ├── root_cause   : downstream_dependency                 ║
+║     ├── culprit      : product-catalog                       ║
+║     ├── priority     : P2 — High                             ║
+║     ├── suggestions  : [actionable fix list]                 ║
+║     └── explanation  : LLM generated summary                 ║
+╚══════════════════════════════════════════════════════════════╝
+```
 
 ## How It Works
 
