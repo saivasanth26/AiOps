@@ -11,7 +11,7 @@
 
 ## Architecture
 
-> View the [animated architecture diagram](/architecture.html)
+> View the [animated architecture diagram](/docs/architecture.html)
 ```
 Prometheus (metrics)          Jaeger (traces)
       ↓                             ↓
