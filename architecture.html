@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIOps Observability System</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg:        #080c12;
+    --bg2:       #0d1420;
+    --bg3:       #111a2a;
+    --border:    rgba(99,179,237,0.12);
+    --blue:      #63b3ed;
+    --teal:      #4fd1c5;
+    --green:     #68d391;
+    --amber:     #f6ad55;
+    --coral:     #fc8181;
+    --purple:    #b794f4;
+    --muted:     #4a5568;
+    --text:      #e2e8f0;
+    --text2:     #a0aec0;
+    --text3:     #718096;
+    --mono:      'JetBrains Mono', monospace;
+    --sans:      'Syne', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 80px 48px 60px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -120px; left: -120px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(99,179,237,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; right: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(79,209,197,0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border: 1px solid rgba(99,179,237,0.3);
+    border-radius: 2px;
+    font-size: 11px;
+    color: var(--blue);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--teal);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  h1 {
+    font-family: var(--sans);
+    font-size: clamp(32px, 5vw, 52px);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #e2e8f0 0%, #63b3ed 50%, #4fd1c5 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    font-size: 15px;
+    color: var(--text2);
+    max-width: 600px;
+    margin-bottom: 32px;
+    font-weight: 300;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tag {
+    padding: 3px 10px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.05em;
+  }
+
+  .tag.blue   { border-color: rgba(99,179,237,0.4);  color: var(--blue); }
+  .tag.teal   { border-color: rgba(79,209,197,0.4);  color: var(--teal); }
+  .tag.green  { border-color: rgba(104,211,145,0.4); color: var(--green); }
+  .tag.amber  { border-color: rgba(246,173,85,0.4);  color: var(--amber); }
+  .tag.purple { border-color: rgba(183,148,244,0.4); color: var(--purple); }
+
+  /* ── SECTIONS ── */
+  .section {
+    padding: 56px 48px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 8px;
+  }
+
+  .section-title {
+    font-family: var(--sans);
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 32px;
+    color: var(--text);
+  }
+
+  /* ── PHILOSOPHY ── */
+  .philosophy-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .phil-card {
+    background: var(--bg2);
+    padding: 28px;
+  }
+
+  .phil-arrow {
+    font-size: 20px;
+    margin-bottom: 12px;
+    color: var(--teal);
+  }
+
+  .phil-from {
+    font-size: 13px;
+    color: var(--text3);
+    margin-bottom: 4px;
+  }
+
+  .phil-to {
+    font-family: var(--sans);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  /* ── ARCHITECTURE DIAGRAM ── */
+  .arch-container {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 48px 32px;
+    overflow-x: auto;
+  }
+
+  .arch-diagram {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    min-width: 700px;
+  }
+
+  /* Layer */
+  .layer {
+    width: 100%;
+    max-width: 760px;
+    border: 1px solid;
+    border-radius: 4px;
+    padding: 20px 24px 24px;
+    position: relative;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .layer.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .layer-label {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+
+  .layer-nodes {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .node {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px 16px;
+    border-radius: 3px;
+    border: 1px solid;
+  }
+
+  .node-name {
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  .node-desc {
+    font-size: 10px;
+    opacity: 0.65;
+    line-height: 1.4;
+  }
+
+  /* Layer colors */
+  .layer-infra  { border-color: rgba(79,209,197,0.3);  background: rgba(79,209,197,0.04); }
+  .layer-detect { border-color: rgba(183,148,244,0.3); background: rgba(183,148,244,0.04); }
+  .layer-reason { border-color: rgba(246,173,85,0.3);  background: rgba(246,173,85,0.04); }
+  .layer-llm    { border-color: rgba(104,211,145,0.3); background: rgba(104,211,145,0.04); }
+
+  .layer-infra  .layer-label { color: var(--teal); }
+  .layer-detect .layer-label { color: var(--purple); }
+  .layer-reason .layer-label { color: var(--amber); }
+  .layer-llm    .layer-label { color: var(--green); }
+
+  .layer-infra  .node { border-color: rgba(79,209,197,0.2);  background: rgba(79,209,197,0.06); }
+  .layer-detect .node { border-color: rgba(183,148,244,0.2); background: rgba(183,148,244,0.06); }
+  .layer-reason .node { border-color: rgba(246,173,85,0.2);  background: rgba(246,173,85,0.06); }
+  .layer-llm    .node { border-color: rgba(104,211,145,0.2); background: rgba(104,211,145,0.06); }
+
+  .layer-infra  .node-name { color: var(--teal); }
+  .layer-detect .node-name { color: var(--purple); }
+  .layer-reason .node-name { color: var(--amber); }
+  .layer-llm    .node-name { color: var(--green); }
+
+  .node-desc { color: var(--text2); }
+
+  /* Connector */
+  .connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    padding: 6px 0;
+    opacity: 0;
+    transition: opacity 0.4s ease 0.3s;
+  }
+
+  .connector.visible { opacity: 1; }
+
+  .connector-line {
+    width: 1px;
+    height: 24px;
+    background: linear-gradient(to bottom, var(--muted), transparent);
+    position: relative;
+  }
+
+  .connector-line::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 6px solid var(--muted);
+  }
+
+  .connector-label {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 2px 8px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    margin: 4px 0;
+    background: var(--bg);
+  }
+
+  /* Anomaly gate */
+  .gate {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: 1px solid rgba(252,129,129,0.3);
+    border-radius: 3px;
+    background: rgba(252,129,129,0.05);
+    font-size: 11px;
+    color: var(--coral);
+    opacity: 0;
+    transition: opacity 0.4s ease 0.5s;
+  }
+
+  .gate.visible { opacity: 1; }
+
+  .gate-dot {
+    width: 6px; height: 6px;
+    background: var(--coral);
+    border-radius: 50%;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  /* Output */
+  .output-box {
+    width: 100%;
+    max-width: 760px;
+    padding: 20px 24px;
+    border: 1px solid rgba(104,211,145,0.3);
+    border-radius: 4px;
+    background: rgba(104,211,145,0.04);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.6s ease 0.3s, transform 0.6s ease 0.3s;
+  }
+
+  .output-box.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .output-title {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--green);
+    margin-bottom: 12px;
+  }
+
+  .output-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 8px;
+  }
+
+  .output-field {
+    padding: 8px 12px;
+    background: rgba(104,211,145,0.06);
+    border: 1px solid rgba(104,211,145,0.15);
+    border-radius: 3px;
+  }
+
+  .output-key {
+    font-size: 9px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 3px;
+  }
+
+  .output-val {
+    font-size: 11px;
+    color: var(--green);
+  }
+
+  /* Animated data flow */
+  .flow-line {
+    position: absolute;
+    left: 0; top: 50%;
+    width: 100%;
+    height: 1px;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .flow-particle {
+    position: absolute;
+    top: -2px;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    animation: flow-right 3s linear infinite;
+  }
+
+  @keyframes flow-right {
+    0%   { left: -4px; opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { left: 100%; opacity: 0; }
+  }
+
+  /* ── MODULES TABLE ── */
+  .module-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .module-row {
+    display: grid;
+    grid-template-columns: 220px 140px 1fr;
+    background: var(--bg2);
+    gap: 0;
+  }
+
+  .module-row.header {
+    background: var(--bg3);
+  }
+
+  .module-cell {
+    padding: 14px 20px;
+    border-right: 1px solid var(--border);
+    font-size: 12px;
+  }
+
+  .module-cell:last-child { border-right: none; }
+
+  .module-row.header .module-cell {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text3);
+  }
+
+  .module-file {
+    font-family: var(--mono);
+    color: var(--blue);
+    font-size: 12px;
+  }
+
+  .module-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+  }
+
+  .status-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+  }
+
+  .done   .status-dot { background: var(--green); }
+  .done              { color: var(--green); }
+  .pending .status-dot { background: var(--amber); }
+  .pending           { color: var(--amber); }
+
+  /* ── RCA RULES ── */
+  .rules-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .rule-row {
+    display: grid;
+    grid-template-columns: 40px 180px 1fr;
+    background: var(--bg2);
+    align-items: center;
+  }
+
+  .rule-num {
+    padding: 16px;
+    font-family: var(--sans);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--muted);
+    border-right: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .rule-name {
+    padding: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    border-right: 1px solid var(--border);
+  }
+
+  .rule-desc {
+    padding: 16px;
+    font-size: 12px;
+    color: var(--text2);
+  }
+
+  .rule-row:nth-child(1) .rule-name { color: var(--coral); }
+  .rule-row:nth-child(2) .rule-name { color: var(--amber); }
+  .rule-row:nth-child(3) .rule-name { color: var(--blue); }
+  .rule-row:nth-child(4) .rule-name { color: var(--purple); }
+  .rule-row:nth-child(5) .rule-name { color: var(--text3); }
+
+  /* ── TECH STACK ── */
+  .stack-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .stack-card {
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: var(--bg2);
+    transition: border-color 0.2s;
+  }
+
+  .stack-card:hover { border-color: rgba(99,179,237,0.3); }
+
+  .stack-icon {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+
+  .stack-name {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .stack-role {
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  /* ── CODEBLOCK ── */
+  .codeblock {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 24px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text2);
+    overflow-x: auto;
+    line-height: 1.8;
+  }
+
+  .codeblock .c-green  { color: var(--green); }
+  .codeblock .c-blue   { color: var(--blue); }
+  .codeblock .c-teal   { color: var(--teal); }
+  .codeblock .c-amber  { color: var(--amber); }
+  .codeblock .c-muted  { color: var(--muted); }
+  .codeblock .c-coral  { color: var(--coral); }
+  .codeblock .c-purple { color: var(--purple); }
+
+  /* ── FOOTER ── */
+  .footer {
+    padding: 40px 48px;
+    color: var(--text3);
+    font-size: 11px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .footer-right {
+    display: flex;
+    gap: 24px;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 640px) {
+    .hero, .section { padding: 40px 24px; }
+    .module-row { grid-template-columns: 1fr; }
+    .module-cell { border-right: none; border-bottom: 1px solid var(--border); }
+    .rule-row { grid-template-columns: 40px 1fr; }
+    .rule-desc { display: none; }
+    .footer { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="badge">v0.1.0-alpha &nbsp;·&nbsp; AIOps</div>
+  <h1>AIOps Observability<br>System</h1>
+  <p class="subtitle">
+    Automated anomaly detection and root cause analysis for Kubernetes microservices
+    using OpenTelemetry, Isolation Forest, and deterministic RCA rules.
+    LLM used strictly for explanation — never for decisions.
+  </p>
+  <div class="tags">
+    <span class="tag blue">Kubernetes</span>
+    <span class="tag teal">OpenTelemetry</span>
+    <span class="tag teal">Prometheus</span>
+    <span class="tag blue">Jaeger</span>
+    <span class="tag purple">Isolation Forest</span>
+    <span class="tag amber">Python</span>
+    <span class="tag green">Grafana</span>
+    <span class="tag">scikit-learn</span>
+    <span class="tag">Ollama</span>
+  </div>
+</div>
+
+<!-- ── PHILOSOPHY ── -->
+<div class="section">
+  <div class="section-label">Core Philosophy</div>
+  <div class="section-title">Four pillars, one pipeline</div>
+  <div class="philosophy-grid">
+    <div class="phil-card">
+      <div class="phil-arrow">→</div>
+      <div class="phil-from">Metrics</div>
+      <div class="phil-to">Detection</div>
+    </div>
+    <div class="phil-card">
+      <div class="phil-arrow">→</div>
+      <div class="phil-from">Traces</div>
+      <div class="phil-to">Reasoning</div>
+    </div>
+    <div class="phil-card">
+      <div class="phil-arrow">→</div>
+      <div class="phil-from">Rules</div>
+      <div class="phil-to">Correctness</div>
+    </div>
+    <div class="phil-card">
+      <div class="phil-arrow">→</div>
+      <div class="phil-from">LLM</div>
+      <div class="phil-to">Explanation</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ARCHITECTURE ── -->
+<div class="section">
+  <div class="section-label">Architecture</div>
+  <div class="section-title">Animated pipeline flow</div>
+
+  <div class="arch-container">
+    <div class="arch-diagram">
+
+      <!-- Layer 1 -->
+      <div class="layer layer-infra" id="l1">
+        <div class="layer-label">Layer 1 — Instrumentation</div>
+        <div class="layer-nodes">
+          <div class="node">
+            <div class="node-name">Kubernetes</div>
+            <div class="node-desc">OTel Demo App<br>2-node cluster</div>
+          </div>
+          <div class="node">
+            <div class="node-name">OTel SDK</div>
+            <div class="node-desc">Auto-instruments<br>all services</div>
+          </div>
+          <div class="node">
+            <div class="node-name">OTel Collector</div>
+            <div class="node-desc">Receives, processes<br>and routes signals</div>
+          </div>
+          <div class="node">
+            <div class="node-name">Prometheus</div>
+            <div class="node-desc">Metrics storage<br>PromQL queries</div>
+          </div>
+          <div class="node">
+            <div class="node-name">Jaeger v1.52</div>
+            <div class="node-desc">Trace storage<br>REST API</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Connector 1→2 -->
+      <div class="connector" id="c1">
+        <div class="connector-line"></div>
+        <div class="connector-label">p95 · cpu · rps every 10s</div>
+        <div class="connector-line"></div>
+      </div>
+
+      <!-- Layer 2 -->
+      <div class="layer layer-detect" id="l2">
+        <div class="layer-label">Layer 2 — Detection</div>
+        <div class="layer-nodes">
+          <div class="node">
+            <div class="node-name">metrics_fetcher</div>
+            <div class="node-desc">PromQL queries<br>→ feature vector</div>
+          </div>
+          <div class="node">
+            <div class="node-name">StandardScaler</div>
+            <div class="node-desc">Normalises<br>[p95, cpu, rps]</div>
+          </div>
+          <div class="node">
+            <div class="node-name">Isolation Forest</div>
+            <div class="node-desc">Trained on baseline<br>predict = −1 → anomaly</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Anomaly gate -->
+      <div class="connector" id="c2">
+        <div class="connector-line"></div>
+        <div class="gate" id="gate">
+          <div class="gate-dot"></div>
+          anomaly detected — agent triggered
+        </div>
+        <div class="connector-line"></div>
+      </div>
+
+      <!-- Layer 3 -->
+      <div class="layer layer-reason" id="l3">
+        <div class="layer-label">Layer 3 — Reasoning</div>
+        <div class="layer-nodes">
+          <div class="node">
+            <div class="node-name">trace_analyzer</div>
+            <div class="node-desc">Fetches Jaeger traces<br>parses spans dynamically</div>
+          </div>
+          <div class="node">
+            <div class="node-name">rule_engine</div>
+            <div class="node-desc">5 deterministic rules<br>cascade → CPU → RPS → downstream → internal</div>
+          </div>
+          <div class="node">
+            <div class="node-name">suggestion_engine</div>
+            <div class="node-desc">Maps root cause<br>→ actionable fixes</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Connector 3→4 -->
+      <div class="connector" id="c3">
+        <div class="connector-line"></div>
+        <div class="connector-label">structured context → LLM</div>
+        <div class="connector-line"></div>
+      </div>
+
+      <!-- Layer 4 -->
+      <div class="layer layer-llm" id="l4">
+        <div class="layer-label">Layer 4 — Explanation (LLM)</div>
+        <div class="layer-nodes">
+          <div class="node">
+            <div class="node-name">explainer</div>
+            <div class="node-desc">Structured prompt<br>→ Ollama / Mistral</div>
+          </div>
+          <div class="node">
+            <div class="node-name">LLM boundary</div>
+            <div class="node-desc">Explanation only<br>zero decision-making</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Connector 4→output -->
+      <div class="connector" id="c4">
+        <div class="connector-line"></div>
+        <div class="connector-label">incident report</div>
+        <div class="connector-line"></div>
+      </div>
+
+      <!-- Output -->
+      <div class="output-box" id="out">
+        <div class="output-title">Incident Report Output</div>
+        <div class="output-fields">
+          <div class="output-field">
+            <div class="output-key">root cause</div>
+            <div class="output-val">downstream_dependency</div>
+          </div>
+          <div class="output-field">
+            <div class="output-key">culprit</div>
+            <div class="output-val">product-catalog</div>
+          </div>
+          <div class="output-field">
+            <div class="output-key">priority</div>
+            <div class="output-val">P2 — High</div>
+          </div>
+          <div class="output-field">
+            <div class="output-key">confidence</div>
+            <div class="output-val">high</div>
+          </div>
+          <div class="output-field">
+            <div class="output-key">p95 latency</div>
+            <div class="output-val">7.75ms</div>
+          </div>
+          <div class="output-field">
+            <div class="output-key">explanation</div>
+            <div class="output-val">LLM generated</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── MODULES ── -->
+<div class="section">
+  <div class="section-label">Implementation</div>
+  <div class="section-title">Module breakdown</div>
+  <div class="module-grid">
+    <div class="module-row header">
+      <div class="module-cell">File</div>
+      <div class="module-cell">Status</div>
+      <div class="module-cell">Responsibility</div>
+    </div>
+    <div class="module-row">
+      <div class="module-cell"><span class="module-file">Configs/settings.py</span></div>
+      <div class="module-cell"><span class="module-status done"><span class="status-dot"></span>Complete</span></div>
+      <div class="module-cell">All URLs, PromQL queries, model params, file paths</div>
+    </div>
+    <div class="module-row">
+      <div class="module-cell"><span class="module-file">Tools/metrics_fetcher.py</span></div>
+      <div class="module-cell"><span class="module-status done"><span class="status-dot"></span>Complete</span></div>
+      <div class="module-cell">Prometheus query execution, feature vector construction</div>
+    </div>
+    <div class="module-row">
+      <div class="module-cell"><span class="module-file">Models/anomaly_detector.py</span></div>
+      <div class="module-cell"><span class="module-status done"><span class="status-dot"></span>Complete</span></div>
+      <div class="module-cell">Isolation Forest train, predict, persist and load</div>
+    </div>
+    <div class="module-row">
+      <div class="module-cell"><span class="module-file">Tools/trace_analyzer.py</span></div>
+      <div class="module-cell"><span class="module-status done"><span class="status-dot"></span>Complete</span></div>
+      <div class="module-cell">Jaeger trace fetch, span parsing, service discovery</div>
+    </div>
+    <div class="module-row">
+      <div class="module-cell"><span class="module-file">RCA/rule_engine.py</span></div>
+      <div class="module-cell"><span class="module-status done"><span class="status-dot"></span>Complete</span></div>
+      <div class="module-cell">5 deterministic RCA rules, priority-ordered execution</div>
+    </div>
+    <div class="module-row">
+      <div class="module-cell"><span class="module-file">Tools/suggestion_engine.py</span></div>
+      <div class="module-cell"><span class="module-status done"><span class="status-dot"></span>Complete</span></div>
+      <div class="module-cell">Root cause → fix suggestion mapping, priority assignment</div>
+    </div>
+    <div class="module-row">
+      <div class="module-cell"><span class="module-file">LLM/explainer.py</span></div>
+      <div class="module-cell"><span class="module-status pending"><span class="status-dot"></span>In Progress</span></div>
+      <div class="module-cell">Structured prompt → Ollama/Mistral → human-readable report</div>
+    </div>
+    <div class="module-row">
+      <div class="module-cell"><span class="module-file">agent.py</span></div>
+      <div class="module-cell"><span class="module-status pending"><span class="status-dot"></span>In Progress</span></div>
+      <div class="module-cell">Main orchestrator — baseline → monitor → detect → RCA → explain</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── RCA RULES ── -->
+<div class="section">
+  <div class="section-label">Root Cause Analysis</div>
+  <div class="section-title">Deterministic rule engine</div>
+  <div class="rules-list">
+    <div class="rule-row">
+      <div class="rule-num">1</div>
+      <div class="rule-name">Cascade Failure</div>
+      <div class="rule-desc">Errors detected across multiple services in the trace. Identifies first failing service in call chain.</div>
+    </div>
+    <div class="rule-row">
+      <div class="rule-num">2</div>
+      <div class="rule-name">Resource Pressure</div>
+      <div class="rule-desc">CPU usage exceeds 80% threshold. Service under sustained resource pressure.</div>
+    </div>
+    <div class="rule-row">
+      <div class="rule-num">3</div>
+      <div class="rule-name">Traffic Spike</div>
+      <div class="rule-desc">RPS exceeds 2x baseline. Load pattern causing saturation.</div>
+    </div>
+    <div class="rule-row">
+      <div class="rule-num">4</div>
+      <div class="rule-name">Downstream Dependency</div>
+      <div class="rule-desc">Downstream service span duration exceeds target service internal duration. Bottleneck is external.</div>
+    </div>
+    <div class="rule-row">
+      <div class="rule-num">5</div>
+      <div class="rule-name">Internal Slowness</div>
+      <div class="rule-desc">Default fallback. No external cause identified. Profile the service for internal bottlenecks.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TECH STACK ── -->
+<div class="section">
+  <div class="section-label">Technology</div>
+  <div class="section-title">Stack</div>
+  <div class="stack-grid">
+    <div class="stack-card">
+      <div class="stack-icon">☸</div>
+      <div class="stack-name">Kubernetes</div>
+      <div class="stack-role">Container orchestration</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-icon">⬡</div>
+      <div class="stack-name">OpenTelemetry</div>
+      <div class="stack-role">Instrumentation standard</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-icon">◎</div>
+      <div class="stack-name">Prometheus</div>
+      <div class="stack-role">Metrics collection</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-icon">◈</div>
+      <div class="stack-name">Jaeger</div>
+      <div class="stack-role">Distributed tracing</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-icon">▦</div>
+      <div class="stack-name">Grafana</div>
+      <div class="stack-role">Visualisation</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-icon">⬟</div>
+      <div class="stack-name">Isolation Forest</div>
+      <div class="stack-role">Anomaly detection</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-icon">⬡</div>
+      <div class="stack-name">Flannel</div>
+      <div class="stack-role">Kubernetes CNI</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-icon">◉</div>
+      <div class="stack-name">Ollama</div>
+      <div class="stack-role">Local LLM runtime</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-icon">⬢</div>
+      <div class="stack-name">Python</div>
+      <div class="stack-role">Agent implementation</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PROJECT STRUCTURE ── -->
+<div class="section">
+  <div class="section-label">Structure</div>
+  <div class="section-title">Project layout</div>
+  <div class="codeblock">
+<span class="c-teal">AiOps/</span>
+├── <span class="c-blue">Configs/</span>
+│   └── <span class="c-green">settings.py</span>          <span class="c-muted"># single source of truth</span>
+├── <span class="c-blue">Tools/</span>
+│   ├── <span class="c-green">metrics_fetcher.py</span>   <span class="c-muted"># prometheus queries</span>
+│   ├── <span class="c-green">trace_analyzer.py</span>    <span class="c-muted"># jaeger trace parsing</span>
+│   └── <span class="c-green">suggestion_engine.py</span> <span class="c-muted"># fix suggestion mapping</span>
+├── <span class="c-blue">Models/</span>
+│   └── <span class="c-green">anomaly_detector.py</span>  <span class="c-muted"># isolation forest</span>
+├── <span class="c-blue">RCA/</span>
+│   └── <span class="c-green">rule_engine.py</span>       <span class="c-muted"># deterministic rca rules</span>
+├── <span class="c-blue">LLM/</span>
+│   └── <span class="c-amber">explainer.py</span>         <span class="c-muted"># ollama/mistral explainer</span>
+├── <span class="c-blue">data/</span>
+│   └── <span class="c-blue">baseline/</span>            <span class="c-muted"># saved model + scaler + baseline</span>
+├── <span class="c-amber">agent.py</span>                 <span class="c-muted"># main orchestrator</span>
+└── <span class="c-green">requirements.txt</span>
+  </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<div class="footer">
+  <div>AIOps Observability System &nbsp;·&nbsp; v0.1.0-alpha &nbsp;·&nbsp; Cloud Computing Master's Project</div>
+  <div class="footer-right">
+    <span>Python 3.12</span>
+    <span>Kubernetes 1.31</span>
+    <span>OTel Demo 2.2.0</span>
+  </div>
+</div>
+
+<script>
+  // Staggered layer reveal on load
+  const layers = [
+    { el: document.getElementById('l1'), delay: 100 },
+    { el: document.getElementById('c1'), delay: 400 },
+    { el: document.getElementById('l2'), delay: 600 },
+    { el: document.getElementById('c2'), delay: 900 },
+    { el: document.getElementById('gate'), delay: 1000 },
+    { el: document.getElementById('l3'), delay: 1200 },
+    { el: document.getElementById('c3'), delay: 1500 },
+    { el: document.getElementById('l4'), delay: 1700 },
+    { el: document.getElementById('c4'), delay: 2000 },
+    { el: document.getElementById('out'), delay: 2200 },
+  ];
+
+  layers.forEach(({ el, delay }) => {
+    if (!el) return;
+    setTimeout(() => el.classList.add('visible'), delay);
+  });
+</script>
+</body>
+</html>
